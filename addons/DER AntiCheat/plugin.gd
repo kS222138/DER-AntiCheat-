@@ -50,7 +50,7 @@ func _exit_tree():
         remove_control_from_docks(dock)
         dock.queue_free()
     
-    print("\n🛡️  DER Protection System 已禁用\n")
+    print("\n🛡️  DER AntiCheat 已禁用\n")
 
 func _process(delta):
     scan_timer += delta
