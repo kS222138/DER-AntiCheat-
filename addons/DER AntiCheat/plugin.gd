@@ -35,7 +35,7 @@ func _enter_tree():
     
     
     print("\n🛡️ ===============================")
-    print("🛡️  DER Protection System 已启用")
+    print("🛡️  DER AntiCheat 已启用")
     print("🛡️  版本: 1.1.0")
     print("🛡️  状态: 运行中")
     print("🛡️  检测器: 3个已加载")
