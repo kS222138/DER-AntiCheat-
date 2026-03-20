@@ -33,15 +33,9 @@ func _enter_tree():
     
     logger.info("plugin", "DER Protection System loaded")
     
-    
     print("\n🛡️ ===============================")
-<<<<<<< HEAD
-    print("🛡️  DER Protection System 已启用")
-    print("🛡️  版本: 1.2.0")
-=======
     print("🛡️  DER AntiCheat 已启用")
-    print("🛡️  版本: 1.1.0")
->>>>>>> b6f106d08e6e73cee643c2f29f8a98e8a71d3b09
+    print("🛡️  版本: 1.2.0")
     print("🛡️  状态: 运行中")
     print("🛡️  检测器: 3个已加载")
     print("🛡️ ===============================\n")
@@ -55,7 +49,7 @@ func _exit_tree():
         remove_control_from_docks(dock)
         dock.queue_free()
     
-    print("\n🛡️  DER AntiCheat 已禁用\n")
+    print("\n🛡️  DER Protection System 已禁用\n")
 
 func _process(delta):
     scan_timer += delta
