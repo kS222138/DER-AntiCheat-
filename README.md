@@ -1,37 +1,28 @@
 # 🛡️ DER AntiCheat
 
-**Version:** 1.2.0  
+**Version:** 1.3.0  
 **Godot Version:** 4.6+  
 **License:** MIT  
 
 ---
 
-## 📦 What's New in v1.2.0
+## 📦 What's New in v1.3.0
 
-### ✅ Cache System (`DERCacheManager`)
-- TTL-based auto cleanup
-- LRU eviction strategy (expired first, then least recently used)
-- Thread-safe (Mutex protected)
-- Batch operations (`get_many` / `set_many`)
-- Optional encrypted persistence (`save_to_file` / `load_from_file`)
-- Full statistics (hit ratio / evictions / encryption status)
+### ✅ Configuration System
+- **Config Manager** (`DERConfigManager`) - Load, save, and manage configurations with auto-save
+- **Config Diff** (`DERConfigDiff`) - Compare configurations with deep recursion and array modes
+- **Config Preset** (`DERConfigPreset`) - 7 ready-to-use presets (Development, Testing, Production, Light, Balanced, Strict)
+- **Config Template** (`DERConfigTemplate`) - Reusable configuration templates with import/export
+- **Config Validator** (`DERConfigValidator`) - Validate configurations with custom rules and auto-fix
 
-### ✅ Replay Protection System (`DERReplayProtector`)
-- Replay attack prevention (Nonce + RequestID双重验证)
-- Time window validation (default 60 seconds)
-- HMAC-SHA256 signature verification
-- Cryptographically secure random numbers (Crypto)
-- Auto cleanup of expired nonces
-- Batch validation interface
-
-### ✅ Time Synchronization System (`DERTimeSync`)
-- NTP-style time synchronization algorithm
-- HTTPS enforcement (prevents MITM attacks)
-- Optional certificate pinning
-- Optional request signing (HMAC-SHA256)
-- Latency sampling (keeps 70% lowest latency samples)
-- Median offset calculation
-- Security status monitoring
+### ✅ Core Features (from v1.0-v1.2)
+- **Memory Encryption** (`VanguardValue`) - Protect integers, floats, booleans, strings with fragmentation and honeypots
+- **Value Pool** (`DERPool`) - Centralized management of protected values
+- **Detectors** - Anti-debug, memory scanner, speed hack, integrity checks
+- **Network Protection** - Packet encryption, HMAC signatures, replay prevention, WebSocket, resume downloads
+- **Cache System** (`DERCacheManager`) - TTL-based auto cleanup, LRU eviction, thread-safe, encrypted persistence
+- **Replay Protection** (`DERReplayProtector`) - Nonce + RequestID双重验证双重 validation, HMAC-SHA256
+- **Time Synchronization** (`DERTimeSync`) - NTP-style algorithm, HTTPS enforcement, certificate pinning
 
 ---
 
@@ -84,7 +75,43 @@ func _on_scan_timer():
         print("Cheating detected! Taking action...")
 ```
 
-5. Network Client Setup
+5. Configuration System (New in v1.3.0)
+
+```gdscript
+# Create config manager
+var config = DERConfigManager.new()
+
+# Load configuration
+if config.load_config("user://anticheat.json"):
+    print("Config loaded")
+
+# Get/Set values
+config.set_value("protect_level", 2)
+var level = config.get_value("protect_level", 1)
+
+# Apply preset
+DERConfigPreset.apply_preset(config, DERConfigPreset.PresetType.STRICT)
+
+# Listen to changes
+config.add_listener("protect_level", func(key, old, new):
+    print("Protection level changed: %s -> %s" % [old, new])
+)
+
+# Auto save
+config.set_auto_save(true)
+
+# Compare configurations
+var diff = DERConfigDiff.new()
+var diffs = diff.compare_files("old.json", "new.json")
+print(diff.generate_report(diffs))
+
+# Validate configuration
+var validator = DERConfigValidator.new()
+if not validator.validate_config(config.get_all(), true):
+    print("Config has errors, auto-fixed")
+```
+
+6. Network Client Setup
 
 ```gdscript
 var client = DERNetworkClient.new("https://api.yourgame.com", self)
@@ -103,7 +130,7 @@ client.handshake(func(success, result):
 )
 ```
 
-6. Send Encrypted Data
+7. Send Encrypted Data
 
 ```gdscript
 func send_player_position(x, y):
@@ -129,7 +156,7 @@ func send_critical_action(action):
     )
 ```
 
-7. WebSocket for Real-time Communication
+8. WebSocket for Real-time Communication
 
 ```gdscript
 func connect_to_chat():
@@ -142,6 +169,18 @@ func connect_to_chat():
             })
     )
 ```
+
+---
+
+📦 Available Presets
+
+Preset Description Use Case
+Development Disable detection, easy debugging Development only
+Testing Low intensity detection QA testing
+Production Standard protection Most games
+Light Low overhead, high performance Low-end devices
+Balanced Balanced security & performance Mid-range devices
+Strict Maximum security Competitive games
 
 ---
 
