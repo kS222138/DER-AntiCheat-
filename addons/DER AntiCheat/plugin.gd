@@ -189,6 +189,3 @@ func _update_stats():
 
 func get_plugin_name():
     return "DER Protection System"
-
-func get_plugin_icon():
-    return preload("res://icon.svg")
