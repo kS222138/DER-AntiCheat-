@@ -35,9 +35,10 @@ func _enter_tree():
     
     print("\n🛡️ ===============================")
     print("🛡️  DER AntiCheat 已启用")
-    print("🛡️  版本: 1.4.0")
+    print("🛡️  版本: 1.5.0")
     print("🛡️  状态: 运行中")
-    print("🛡️  检测器: 7个已加载")
+    print("🛡️  检测器: 11个已加载")
+    print("🛡️  网络增强: 5个已加载")
     print("🛡️ ===============================\n")
 
 func _exit_tree():
@@ -189,6 +190,3 @@ func _update_stats():
 
 func get_plugin_name():
     return "DER AntiCheat"
-
-func get_plugin_icon():
-    return preload("res://icon.svg")

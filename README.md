@@ -1,14 +1,21 @@
 # 🛡️ DER AntiCheat
 
-**Version:** 1.4.0  
+**Version:** 1.5.0  
 **Godot Version:** 4.6+  
 **License:** MIT  
 
 ---
 
-## 📦 What's New in v1.4.0
+## 📦 What's New in v1.5.0
 
-### ✅ Enhanced Detection System
+### ✅ Network Enhancement System
+- **Request Signer** (`DERSigner`) - HMAC-SHA256 signature for request authentication
+- **Heartbeat** (`DERHeartbeat`) - Connection monitoring with auto-reconnect
+- **Obfuscator** (`DERObfuscator`) - Traffic obfuscation with 3 levels (Light/Medium/Heavy)
+- **Request Queue** (`DERRequestQueue`) - Priority-based request queuing with retry
+- **Batch Request** (`DERBatchRequest`) - Batch request compression with adaptive mode
+
+### ✅ Enhanced Detection System (from v1.4.0)
 - **Inject Detector** (`DERInjectDetector`) - Detect DLL injection, code hooks, script injection (HemoLoader), memory patches, and framework hooks (Xposed/Magisk)
 - **Memory Scanner** (`DERMemoryScanner`) - Detect Cheat Engine, GameGuardian, memory scan patterns, and abnormal access rates
 - **Multi Instance Detector** (`DERMultiInstance`) - Prevent game from being opened multiple times via process list, file lock, and port detection
@@ -21,7 +28,7 @@
 - **Cache System** (`DERCacheManager`) - TTL-based auto cleanup, LRU eviction, thread-safe, encrypted persistence
 - **Replay Protection** (`DERReplayProtector`) - Nonce + RequestID双重验证双重 validation, HMAC-SHA256
 - **Time Synchronization** (`DERTimeSync`) - NTP-style algorithm, HTTPS enforcement, certificate pinning
-- **Configuration System** - Manager, diff, preset, template, validator with auto-save and hot-reload
+- **Configuration System** - Manager, diff, preset, template, validator with auto-save
 
 ---
 
@@ -74,7 +81,7 @@ func _on_scan_timer():
         print("Cheating detected! Taking action...")
 ```
 
-5. Detection System (New in v1.4.0)
+5. Detection System
 
 ```gdscript
 # Inject detection
@@ -118,6 +125,37 @@ client.handshake(func(success, result):
     if success:
         print("Connected to server")
 )
+```
+
+8. Network Enhancement (New in v1.5.0)
+
+```gdscript
+# Request signing
+var signer = DERSigner.new()
+var signed = signer.sign("/api/move", {"x": 100, "y": 200})
+
+# Heartbeat monitoring
+var heartbeat = DERHeartbeat.new(client, get_tree())
+heartbeat.start()
+heartbeat.connection_lost.connect(func(): print("Connection lost!"))
+heartbeat.connection_restored.connect(func(): print("Connection restored!"))
+
+# Traffic obfuscation
+var obf = DERObfuscator.new()
+obf.set_level(DERObfuscator.ObfuscateLevel.MEDIUM)
+var encrypted = obf.obfuscate({"data": "secret"})
+
+# Request queue
+var queue = DERRequestQueue.new(client, get_tree())
+queue.set_max_concurrent(3)
+queue.add("/api/score", {"score": 100}, _on_score_sent)
+
+# Batch request
+var batcher = DERBatchRequest.new(client, get_tree())
+batcher.set_mode(DERBatchRequest.BatchMode.ADAPTIVE)
+batcher.add("/api/log", {"event": "move"})
+batcher.add("/api/log", {"event": "shoot"})
+batcher.flush()
 ```
 
 ---
