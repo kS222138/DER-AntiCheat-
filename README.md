@@ -1,24 +1,23 @@
 🛡️ DER AntiCheat
 
-Version: 1.6.0
+Version: 1.7.0
 Godot Version: 4.6+
 License: MIT
 
 ---
 
-📦 What's New in v1.6.0
+📦 What's New in v1.7.0
 
-✅ Security Enhancement System
+✅ SL Protection & Cloud Validation System
 
 Module Class Description
-Archive Encryptor DERArchiveEncryptor AES-256-GCM encrypted save files. Prevents save editors and tampering.
-Archive Manager DERArchiveManager Multi-slot save management with auto-save, import/export, and integrity checks.
-File Validator DERFileValidator SHA256 file integrity verification. Detects game file tampering.
-Debug Detector V2 DERDebugDetectorV2 Advanced anti-debugging with 10 detection methods, 4 protection levels, and honeypot system.
+Rollback Detector DERRollbackDetector Detects save file rollback (loading older saves). Prevents SL (Save/Load) cheating.
+Save Limit DERSaveLimit Limits save/load frequency. Prevents rapid SL spamming.
+Cloud Validator DERCloudValidator Client-side save validation against cloud hash. Detects save tampering.
 
 ---
 
-✅ Existing Features (v1.0-v1.5)
+✅ Existing Features (v1.0-v1.6)
 
 Module Class Description
 Memory Encryption VanguardValue Protects integers, floats, booleans, strings with fragmentation and honeypots
@@ -34,9 +33,13 @@ Obfuscator DERObfuscator Traffic obfuscation (Light/Medium/Heavy)
 Request Queue DERRequestQueue Priority-based queuing with auto-retry
 Batch Request DERBatchRequest Adaptive batch compression
 Cache System DERCacheManager TTL-based cleanup, LRU eviction, encrypted persistence
-Replay Protection DERReplayProtector Nonce + RequestID双重验证双重 validation
+Replay Protection DERReplayProtector Nonce + RequestID dual validation, HMAC-SHA256
 Time Sync DERTimeSync NTP-style algorithm, HTTPS enforcement
 Configuration DERConfigManager Load/save configs, presets, validation, diff tools
+Archive Encryptor DERArchiveEncryptor AES-256-GCM encrypted save files
+Archive Manager DERArchiveManager Multi-slot save management with auto-save
+File Validator DERFileValidator SHA256 file integrity verification
+Debug Detector V2 DERDebugDetectorV2 Advanced anti-debugging with 10 detection methods, 4 protection levels
 
 ---
 
@@ -90,7 +93,76 @@ if threats.size() > 0:
 
 ---
 
-4️⃣ Save File Encryption (New in v1.6.0)
+4️⃣ SL Protection (New in v1.7.0)
+
+```gdscript
+# Create rollback detector
+var rollback = DERRollbackDetector.new()
+rollback.enable_timestamp_check = true
+rollback.enable_version_check = true
+
+# Create save limiter
+var save_limit = DERSaveLimit.new()
+save_limit.max_saves_per_minute = 10
+save_limit.max_loads_per_minute = 10
+save_limit.cooldown_seconds = 2.0
+
+# Record save/load operations
+func on_game_save(slot: int):
+    save_limit.record_save(slot)
+    rollback.record_save(slot, Time.get_unix_time_from_system(), game_version)
+
+func on_game_load(slot: int):
+    if not save_limit.can_load(slot):
+        print("Loading blocked - too frequent!")
+        return
+    save_limit.record_load(slot)
+    
+    if rollback.is_suspicious(slot):
+        print("Rollback detected - loading older save!")
+        # Handle accordingly
+
+# Detect cheat attempts
+save_limit.cheat_attempt_detected.connect(func(slot, attempts):
+    print("Cheat attempt detected on slot ", slot, " attempts: ", attempts)
+    # Report to server
+)
+```
+
+---
+
+5️⃣ Cloud Save Validation (New in v1.7.0)
+
+```gdscript
+# Create cloud validator
+var cloud = DERCloudValidator.new("https://api.yourserver.com", "player_id")
+cloud.auto_repair = false
+cloud.max_retries = 3
+
+# Validate save file
+func on_save_game(slot: int, save_data: Dictionary):
+    # Upload to cloud
+    cloud.upload(slot, save_data)
+    
+    # Validate after upload
+    cloud.validate(slot, save_data, func(success, reason):
+        if success:
+            print("Save validated successfully")
+        else:
+            print("Save validation failed: ", reason)
+            # Save may be corrupted or tampered
+    )
+
+# Check cloud hash
+cloud.fetch_cloud_hash(slot, func(hash, success):
+    if success:
+        print("Cloud hash: ", hash)
+)
+```
+
+---
+
+6️⃣ Save File Encryption
 
 ```gdscript
 # Create encrypted archive manager
@@ -109,18 +181,11 @@ archive.save(0, save_data)
 var loaded = archive.load(0)
 if loaded:
     print("Game loaded: ", loaded)
-
-# Export save (for sharing)
-archive.export_slot(0, "user://backup.json", DERArchiveManager.ExportMode.DECRYPTED)
-
-# Auto-save every 30 seconds
-archive.auto_save = true
-archive.interval = 30.0
 ```
 
 ---
 
-5️⃣ File Integrity Verification (New in v1.6.0)
+7️⃣ File Integrity Verification
 
 ```gdscript
 # Create file validator
@@ -140,7 +205,7 @@ if results.values().has(false):
 
 ---
 
-6️⃣ Anti-Debug Protection (New in v1.6.0)
+8️⃣ Anti-Debug Protection
 
 ```gdscript
 # Create debug detector
@@ -155,7 +220,6 @@ debug.start()
 # Connect signals
 debug.detected.connect(func(type, details):
     print("Debugger detected: ", type)
-    # Send report to server
 )
 
 debug.triggered.connect(func():
@@ -165,25 +229,25 @@ debug.triggered.connect(func():
 
 ---
 
-7️⃣ Use Detection System
+9️⃣ Use Detection System
 
 ```gdscript
-# Inject detection (DLL injection, HemoLoader, etc.)
+# Inject detection
 var inject = DERInjectDetector.new()
 inject.set_threat_callback(func(threat):
     print("Inject threat: ", threat.to_string())
 )
 
-# Memory scanner (Cheat Engine, GameGuardian)
+# Memory scanner
 var scanner = DERMemoryScanner.new()
 scanner.start_continuous_scan(get_tree())
 
 # Multi-instance detection
 var multi = DERMultiInstance.new()
 if not multi.is_single_instance():
-    print("Multiple instances detected! This can be used for cheating.")
+    print("Multiple instances detected!")
 
-# VM/Emulator detection
+# VM detection
 var vm = DERVMDetector.new()
 if vm.is_vm():
     print("Running in: ", vm.get_stats().type)
@@ -191,7 +255,7 @@ if vm.is_vm():
 
 ---
 
-8️⃣ Use Network Client
+🔟 Use Network Client
 
 ```gdscript
 # Create network client
@@ -217,61 +281,6 @@ func send_score(score):
 
 ---
 
-9️⃣ Use Network Enhancement
-
-```gdscript
-# Request signing
-var signer = DERSigner.new()
-var signed = signer.sign("/api/move", {"x": 100, "y": 200})
-
-# Heartbeat monitoring (auto-reconnect)
-var heartbeat = DERHeartbeat.new(client, get_tree())
-heartbeat.start()
-heartbeat.connection_lost.connect(func(): print("Connection lost!"))
-
-# Traffic obfuscation
-var obf = DERObfuscator.new()
-obf.set_level(DERObfuscator.ObfuscateLevel.MEDIUM)
-var encrypted = obf.obfuscate({"data": "secret"})
-
-# Request queue (priority + retry)
-var queue = DERRequestQueue.new(client, get_tree())
-queue.add("/api/score", {"score": 100}, _on_score_sent, DERRequestQueue.Priority.HIGH)
-
-# Batch request (combine multiple requests)
-var batcher = DERBatchRequest.new(client, get_tree())
-batcher.set_mode(DERBatchRequest.BatchMode.ADAPTIVE)
-batcher.add("/api/log", {"event": "move"})
-batcher.add("/api/log", {"event": "shoot"})
-batcher.flush()
-```
-
----
-
-🔟 Use Configuration System
-
-```gdscript
-# Create config manager
-var config = DERConfigManager.new()
-
-# Load existing config
-if config.load_config("user://anticheat.json"):
-    print("Config loaded")
-else:
-    config.set_value("protect_level", 2)
-    config.set_value("enable_detection", true)
-
-# Apply a preset
-DERConfigPreset.apply_preset(config, DERConfigPreset.PresetType.STRICT)
-
-# Listen to changes
-config.add_listener("protect_level", func(key, old, new):
-    print("Protection level changed: %s -> %s" % [old, new])
-)
-```
-
----
-
 📦 Available Presets
 
 Preset Description Best For
@@ -286,16 +295,19 @@ Strict Maximum security Competitive games
 
 🔐 Security Features Summary
 
-Feature v1.5.0 v1.6.0
+Feature v1.6.0 v1.7.0
 Memory Encryption ✅ ✅
 Network Protection ✅ ✅
 Inject Detection ✅ ✅
 VM Detection ✅ ✅
 Configuration System ✅ ✅
-Archive Encryption ❌ ✅
-File Integrity ❌ ✅
-Anti-Debug V2 ❌ ✅
-Honeypot System ❌ ✅
+Archive Encryption ✅ ✅
+File Integrity ✅ ✅
+Anti-Debug V2 ✅ ✅
+Honeypot System ✅ ✅
+Rollback Detection ❌ ✅
+Save/Load Limit ❌ ✅
+Cloud Validation ❌ ✅
 
 ---
 
