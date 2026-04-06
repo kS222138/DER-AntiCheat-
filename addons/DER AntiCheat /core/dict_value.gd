@@ -4,7 +4,7 @@ extends VanguardValue
 var _items: Dictionary = {}
 
 func _init(initial_value: Dictionary):
-    super(initial_value, null)
+    super(initial_value,)
     _items = initial_value.duplicate()
 
 func get_value() -> Dictionary:

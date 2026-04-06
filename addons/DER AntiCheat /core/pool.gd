@@ -46,7 +46,7 @@ func scan_for_threats() -> Dictionary:
     
     for key in _values:
         var v = _values[key]
-        if v.get_detected_cheat_type() != VanguardValue.CheatType.NONE:
+        if v.get_detected_cheat_type() != value.CheatType.NONE:
             results[key] = {
                 "cheat_type": v.get_detected_cheat_type(),
                 "stats": v.get_stats()

@@ -4,7 +4,7 @@ extends VanguardValue
 var _items: Array = []
 
 func _init(initial_value: Array):
-    super(initial_value, null)
+    super(initial_value)
     _items = initial_value.duplicate()
 
 func get_value() -> Array:

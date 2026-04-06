@@ -186,7 +186,7 @@ static func scan_for_cheats() -> Dictionary:
 	for id in _values:
 		var v = _values[id].value
 		var cheat_type = v.get_detected_cheat_type()
-		if cheat_type != VanguardValue.CheatType.NONE:
+		if cheat_type != value.CheatType.NONE:
 			results[id] = {
 				"type": cheat_type,
 				"stats": v.get_stats()

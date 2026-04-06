@@ -2,7 +2,7 @@ class_name DERString
 extends VanguardValue
 
 func _init(initial_value: String):
-    super(initial_value, null)
+    super(initial_value)
 
 func get_value() -> String:
     return super.get_value() as String

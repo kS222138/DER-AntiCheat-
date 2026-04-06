@@ -1,4 +1,4 @@
-class_name VanguardValue
+class_name value
 extends RefCounted
 
 enum CheatType {
