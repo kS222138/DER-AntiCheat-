@@ -290,9 +290,9 @@ func _export_report():
     var data = {
         "stats": get_stats(),
         "history": _history,
-        "timestamp": Time.get_datetime_string_from_system()
+        "timestamp": Time.get_datetime_string_from_system(false, true)  
     }
-    var timestamp = Time.get_datetime_string_from_system().replace(":", "-")
+    var timestamp = Time.get_datetime_string_from_system(false, true).replace(":", "-")  
     var path = "user://profiler_report_%s.json" % timestamp
     var file = FileAccess.open(path, FileAccess.WRITE)
     if file:

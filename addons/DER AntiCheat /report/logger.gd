@@ -35,7 +35,7 @@ func log(level: String, module: String, message: String, data: Dictionary = {}) 
 
 func _log(level: Level, module: String, message: String, data: Dictionary = {}) -> void:
     var entry = {
-        "time": Time.get_datetime_string_from_system(),
+        "time": Time.get_datetime_string_from_system(false, true),
         "timestamp": Time.get_unix_time_from_system(),
         "level": level,
         "module": module,

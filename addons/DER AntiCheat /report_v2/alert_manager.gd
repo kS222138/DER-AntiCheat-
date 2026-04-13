@@ -73,7 +73,7 @@ func _file_alert(level: AlertLevel, message: String, data: Dictionary) -> void:
 			file = FileAccess.open(log_path, FileAccess.WRITE)
 		
 		file.seek_end()
-		var timestamp = Time.get_datetime_string_from_system()
+		var timestamp = Time.get_datetime_string_from_system(false, true)
 		var prefix = _get_prefix(level)
 		file.store_line("%s [%s] %s" % [timestamp, prefix, message])
 		if not data.is_empty():

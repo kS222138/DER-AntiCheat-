@@ -26,6 +26,8 @@ var _performance_monitor
 var _thread_pool
 var _object_pool
 
+const PLUGIN_VERSION = "2.1.0"
+
 const MENU_ITEMS = [
     ["Control Panel", "_open_panel"],
     ["Quick Scan", "_quick_scan"],
@@ -41,15 +43,15 @@ func _enter_tree():
     _init_modules()
     _create_dock()
     _setup_menu()
-    logger.info("plugin", "DER AntiCheat v2.0.0 loaded")
-    print("\n🛡️ DER AntiCheat v2.0.0 Enabled | Performance Optimized | 18 Modules Loaded\n")
+    logger.info("plugin", "DER AntiCheat v%s loaded" % PLUGIN_VERSION)
+    print("\n🛡️ DER AntiCheat v%s Enabled | Performance Optimized | 18 Modules Loaded\n" % PLUGIN_VERSION)
 
 func _exit_tree():
     _remove_menu()
     if dock:
         remove_control_from_docks(dock)
         dock.queue_free()
-    print("\n🛡️ DER AntiCheat v2.0.0 Disabled\n")
+    print("\n🛡️ DER AntiCheat v%s Disabled\n" % PLUGIN_VERSION)
 
 func _init_modules():
     logger = preload("res://addons/DER AntiCheat /report/logger.gd").new()
@@ -146,7 +148,7 @@ func _create_dock():
     dock.add_child(vbox)
 
     var title = Label.new()
-    title.text = "🛡️ DER AntiCheat v2.0.0"
+    title.text = "🛡️ DER AntiCheat v%s" % PLUGIN_VERSION
     title.horizontal_alignment = 1
     title.add_theme_color_override("font_color", Color(0.3, 0.8, 0.3))
     vbox.add_child(title)
@@ -501,9 +503,13 @@ func _show_stats():
     var debug_count = debug_detector.get_count() if debug_detector else 0
     var rollback_stats = rollback_detector.get_stats() if rollback_detector else {}
     var save_stats = save_limit.get_stats() if save_limit else {}
+    
+    # ✅ 修复：使用正确的 Godot 4.x 时间 API
+    var time_str = Time.get_datetime_string_from_system(false, true)
+    
     print("\n📊 ========= Statistics =========")
-    print("  Runtime: ", Time.get_datetime_string_from_system())
-    print("  Version: 2.0.0")
+    print("  Runtime: ", time_str)
+    print("  Version: %s" % PLUGIN_VERSION)
     print("")
     print("  Protected Values: ", stats.values_protected)
     print("  Total Threats: ", stats.total_threats)
@@ -543,4 +549,4 @@ func _update_stats():
         stats_labels.savelimit.text = str(save_stats.get("total_saves", 0))
 
 func get_plugin_name():
-    return "DER AntiCheat v2.0.0"
+    return "DER AntiCheat v%s" % PLUGIN_VERSION
