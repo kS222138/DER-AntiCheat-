@@ -3,7 +3,7 @@ extends RefCounted
 
 signal config_loaded(path: String)
 signal config_saved(path: String)
-signal config_changed(key: String, old_val, new_val)
+signal config_changed(key: String, old_val: Variant, new_val: Variant)
 
 enum ConfigFormat { JSON }
 enum ResetMode { REPLACE, MERGE }
@@ -18,8 +18,10 @@ var _validator: Callable
 var _diff: DERConfigDiff
 var _listeners: Dictionary = {}
 
+
 func _init():
 	_diff = DERConfigDiff.new()
+
 
 func load_config(path: String, format: ConfigFormat = ConfigFormat.JSON) -> bool:
 	var file = FileAccess.open(path, FileAccess.READ)
@@ -43,6 +45,7 @@ func load_config(path: String, format: ConfigFormat = ConfigFormat.JSON) -> bool
 	config_loaded.emit(path)
 	return true
 
+
 func save_config(path: String = "") -> bool:
 	var target = path if path != "" else _path
 	if target == "":
@@ -62,21 +65,25 @@ func save_config(path: String = "") -> bool:
 	config_saved.emit(target)
 	return true
 
-func get_value(key: String, default_val = null):
+
+func get_value(key: String, default_val: Variant = null) -> Variant:
 	return _config.get(key, default_val)
 
-func set_value(key: String, val) -> void:
+
+func set_value(key: String, value: Variant) -> void:
 	var old = _config.get(key)
-	if old == val:
+	if old == value:
 		return
-	_config[key] = val
-	config_changed.emit(key, old, val)
-	_notify_listeners(key, old, val)
+	_config[key] = value
+	config_changed.emit(key, old, value)
+	_notify_listeners(key, old, value)
 	if _auto_save:
 		save_config()
 
+
 func has_key(key: String) -> bool:
 	return _config.has(key)
+
 
 func remove_key(key: String) -> void:
 	if not _config.has(key):
@@ -88,8 +95,10 @@ func remove_key(key: String) -> void:
 	if _auto_save:
 		save_config()
 
+
 func get_all(deep: bool = false) -> Dictionary:
 	return _config.duplicate(deep)
+
 
 func set_all(new_config: Dictionary) -> void:
 	var diffs = _diff.compare(_config, new_config, true)
@@ -99,6 +108,7 @@ func set_all(new_config: Dictionary) -> void:
 		_notify_listeners(d.key, d.old_val, d.new_val)
 	if _auto_save:
 		save_config()
+
 
 func reset_to_default(default_config: Dictionary, mode: ResetMode = ResetMode.REPLACE) -> void:
 	match mode:
@@ -110,6 +120,7 @@ func reset_to_default(default_config: Dictionary, mode: ResetMode = ResetMode.RE
 				merged[key] = default_config[key]
 			set_all(merged)
 
+
 func merge(other: Dictionary, overwrite: bool = true) -> void:
 	var new_config = _config.duplicate(true)
 	for key in other:
@@ -117,24 +128,30 @@ func merge(other: Dictionary, overwrite: bool = true) -> void:
 			new_config[key] = other[key]
 	set_all(new_config)
 
+
 func backup(path: String) -> bool:
 	return save_config(path)
 
+
 func restore(path: String) -> bool:
 	return load_config(path)
+
 
 func validate() -> bool:
 	if not _validator:
 		return true
 	return _validator.call(_config)
 
+
 func set_validator(callback: Callable) -> void:
 	_validator = callback
+
 
 func add_listener(key: String, callback: Callable) -> void:
 	if not _listeners.has(key):
 		_listeners[key] = []
 	_listeners[key].append(callback)
+
 
 func remove_listener(key: String, callback: Callable) -> void:
 	if not _listeners.has(key):
@@ -145,35 +162,45 @@ func remove_listener(key: String, callback: Callable) -> void:
 	if _listeners[key].is_empty():
 		_listeners.erase(key)
 
+
 func set_auto_save(enabled: bool) -> void:
 	_auto_save = enabled
+
 
 func get_path() -> String:
 	return _path
 
+
 func get_format() -> ConfigFormat:
 	return _format
+
 
 func get_diff(old_config: Dictionary, new_config: Dictionary, deep: bool = true) -> Array:
 	return _diff.compare(old_config, new_config, deep)
 
+
 func get_diff_files(path_a: String, path_b: String, deep: bool = true) -> Array:
 	return _diff.compare_files(path_a, path_b, deep)
+
 
 func export_diff(diffs: Array, path: String) -> int:
 	return _diff.export_json(diffs, path)
 
+
 func diff_report(diffs: Array) -> String:
 	return _diff.report(diffs)
+
 
 func diff_stats(diffs: Array) -> Dictionary:
 	return _diff.stats(diffs)
 
-func _notify_listeners(key: String, old_val, new_val) -> void:
+
+func _notify_listeners(key: String, old_val: Variant, new_val: Variant) -> void:
 	if not _listeners.has(key):
 		return
 	for cb in _listeners[key]:
 		cb.call(key, old_val, new_val)
+
 
 func _parse(content: String, format: ConfigFormat, path: String = "") -> Dictionary:
 	match format:
@@ -193,6 +220,7 @@ func _parse(content: String, format: ConfigFormat, path: String = "") -> Diction
 			return {}
 	return {}
 
+
 func _serialize(data: Dictionary, format: ConfigFormat) -> String:
 	match format:
 		ConfigFormat.JSON:
@@ -202,3 +230,21 @@ func _serialize(data: Dictionary, format: ConfigFormat) -> String:
 				push_error("DERConfigManager: Failed to serialize config")
 			return result
 	return ""
+
+
+func clear() -> void:
+	set_all({})
+
+
+func reload() -> bool:
+	if _path == "":
+		return false
+	return load_config(_path, _format)
+
+
+func exists() -> bool:
+	return FileAccess.file_exists(_path)
+
+
+func size() -> int:
+	return _config.size()

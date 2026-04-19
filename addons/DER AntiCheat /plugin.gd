@@ -25,8 +25,13 @@ var _files_added = false
 var _performance_monitor
 var _thread_pool
 var _object_pool
+var _speed_detector_v2
+var _virtual_pos_detector
+var _file_integrity
+var _offline_protector
+var _log_encryptor
 
-const PLUGIN_VERSION = "2.1.0"
+const PLUGIN_VERSION = "2.2.0"
 
 const MENU_ITEMS = [
     ["Control Panel", "_open_panel"],
@@ -44,7 +49,7 @@ func _enter_tree():
     _create_dock()
     _setup_menu()
     logger.info("plugin", "DER AntiCheat v%s loaded" % PLUGIN_VERSION)
-    print("\n🛡️ DER AntiCheat v%s Enabled | Performance Optimized | 18 Modules Loaded\n" % PLUGIN_VERSION)
+    print("\n🛡️ DER AntiCheat v%s Enabled | Performance Optimized | 22 Modules Loaded\n" % PLUGIN_VERSION)
 
 func _exit_tree():
     _remove_menu()
@@ -100,8 +105,13 @@ func _init_modules():
     _thread_pool = preload("res://addons/DER AntiCheat /core/thread_pool.gd").new()
     _object_pool = preload("res://addons/DER AntiCheat /core/object_pool.gd").new(func(): pass)
 
-    _add_critical_files()
+    _speed_detector_v2 = preload("res://addons/DER AntiCheat /detection_v2/speed_detector_v2.gd").new()
+    _virtual_pos_detector = preload("res://addons/DER AntiCheat /detection_v2/virtual_pos_detector.gd").new()
+    _file_integrity = preload("res://addons/DER AntiCheat /core/file_integrity.gd").new()
+    _offline_protector = preload("res://addons/DER AntiCheat /core/offline_protector.gd").new()
+    _log_encryptor = preload("res://addons/DER AntiCheat /core/log_encryptor.gd").new()
 
+    _add_critical_files()
 
 func _setup_menu():
     for item in MENU_ITEMS:
@@ -226,7 +236,9 @@ func _make_status_page():
         ["files", "📁 Verified Files:", "0"],
         ["debug", "🐛 Anti-Debug Triggers:", "0"],
         ["rollback", "📌 Rollback Detections:", "0"],
-        ["savelimit", "💾 Save Spam:", "0"]
+        ["savelimit", "💾 Save Spam:", "0"],
+        ["speed", "⚡ Speed Hack:", "0"],
+        ["gps", "🌍 GPS Spoof:", "0"]
     ]
 
     for item in items:
@@ -388,14 +400,20 @@ func _quick_scan():
     if save_limit and save_limit.get_save_count(0, 60) > 20:
         risk += 0.7
         print("  💾 Save Spam Detected")
+    if _speed_detector_v2 and _speed_detector_v2.is_hacked():
+        risk += 1.2
+        print("  ⚡ Speed Hack Detected")
+    if _virtual_pos_detector and _virtual_pos_detector.is_fake():
+        risk += 1.0
+        print("  🌍 GPS Spoof Detected")
     print("----------------------------------------")
     print("  Total Risk Score: ", risk)
     var status = "✅ SAFE"
     var color = Color(0.3, 0.8, 0.3)
-    if risk > 2.0:
+    if risk > 2.5:
         status = "🔴 HIGH RISK"
         color = Color(0.9, 0.2, 0.2)
-    elif risk > 0.5:
+    elif risk > 0.8:
         status = "🟡 MEDIUM RISK"
         color = Color(0.9, 0.7, 0.2)
     print("  Result: ", status)
@@ -486,6 +504,8 @@ func _open_panel():
     print("  Anti-Debug Triggers: ", debug_count)
     print("  Rollback Detections: ", rollback_stats.get("active_slots", 0))
     print("  SL Limit Saves: ", save_stats.get("total_saves", 0))
+    print("  Speed Hack: ", _speed_detector_v2.is_hacked() if _speed_detector_v2 else "N/A")
+    print("  GPS Spoof: ", _virtual_pos_detector.is_fake() if _virtual_pos_detector else "N/A")
     print("")
     print("  Recent Threats:")
     if threats.size() > 0:
@@ -504,7 +524,6 @@ func _show_stats():
     var rollback_stats = rollback_detector.get_stats() if rollback_detector else {}
     var save_stats = save_limit.get_stats() if save_limit else {}
     
-    # ✅ 修复：使用正确的 Godot 4.x 时间 API
     var time_str = Time.get_datetime_string_from_system(false, true)
     
     print("\n📊 ========= Statistics =========")
@@ -520,6 +539,8 @@ func _show_stats():
     print("  Rollback Detections: ", rollback_stats.get("active_slots", 0))
     print("  Total Saves: ", save_stats.get("total_saves", 0))
     print("  Total Loads: ", save_stats.get("total_loads", 0))
+    print("  Speed Hack: ", _speed_detector_v2.is_hacked() if _speed_detector_v2 else "N/A")
+    print("  GPS Spoof: ", _virtual_pos_detector.is_fake() if _virtual_pos_detector else "N/A")
     print("")
     print("  Logs: ", logs.get("total", 0))
     print("    Warnings: ", logs.get("by_level", {}).get("warning", 0))
@@ -547,6 +568,10 @@ func _update_stats():
         stats_labels.rollback.text = str(rollback_stats.get("active_slots", 0))
     if stats_labels.has("savelimit"):
         stats_labels.savelimit.text = str(save_stats.get("total_saves", 0))
+    if stats_labels.has("speed") and _speed_detector_v2:
+        stats_labels.speed.text = "YES" if _speed_detector_v2.is_hacked() else "NO"
+    if stats_labels.has("gps") and _virtual_pos_detector:
+        stats_labels.gps.text = "YES" if _virtual_pos_detector.is_fake() else "NO"
 
 func get_plugin_name():
     return "DER AntiCheat v%s" % PLUGIN_VERSION

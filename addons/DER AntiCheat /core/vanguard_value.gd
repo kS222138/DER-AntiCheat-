@@ -139,28 +139,32 @@ func _serialize(value: Variant) -> PackedByteArray:
 		ValueType.BOOL:
 			out.append(1 if value else 0)
 		ValueType.INT:
-			var bytes = PackedByteArray()
-			bytes.resize(8)
-			bytes.encode_s64(0, value)
+			var bytes = var_to_bytes(value)
 			out.append_array(bytes)
 		ValueType.FLOAT:
-			var bytes = PackedByteArray()
-			bytes.resize(4)
-			bytes.encode_float(0, value)
+			var bytes = var_to_bytes(value)
 			out.append_array(bytes)
 		ValueType.STRING:
 			var str_bytes = value.to_utf8_buffer()
-			var len_bytes = PackedByteArray()
-			len_bytes.resize(4)
-			len_bytes.encode_s32(0, str_bytes.size())
+			var len_bytes = _int_to_bytes(str_bytes.size())
 			out.append_array(len_bytes)
 			out.append_array(str_bytes)
+		ValueType.ARRAY:
+			var json = JSON.stringify(value)
+			var json_bytes = json.to_utf8_buffer()
+			var len_bytes = _int_to_bytes(json_bytes.size())
+			out.append_array(len_bytes)
+			out.append_array(json_bytes)
+		ValueType.DICT:
+			var json = JSON.stringify(value)
+			var json_bytes = json.to_utf8_buffer()
+			var len_bytes = _int_to_bytes(json_bytes.size())
+			out.append_array(len_bytes)
+			out.append_array(json_bytes)
 		_:
 			var json = JSON.stringify(value)
 			var json_bytes = json.to_utf8_buffer()
-			var len_bytes = PackedByteArray()
-			len_bytes.resize(4)
-			len_bytes.encode_s32(0, json_bytes.size())
+			var len_bytes = _int_to_bytes(json_bytes.size())
 			out.append_array(len_bytes)
 			out.append_array(json_bytes)
 	
@@ -180,19 +184,49 @@ func _deserialize(data: PackedByteArray) -> Variant:
 		ValueType.BOOL:
 			return data[offset] == 1
 		ValueType.INT:
-			return data.decode_s64(offset)
+			var bytes = data.slice(offset, offset + 8)
+			return bytes_to_var(bytes)
 		ValueType.FLOAT:
-			return data.decode_float(offset)
+			var bytes = data.slice(offset, offset + 4)
+			return bytes_to_var(bytes)
 		ValueType.STRING:
-			var len = data.decode_s32(offset)
+			var len = _bytes_to_int(data.slice(offset, offset + 4))
 			offset += 4
 			return data.slice(offset, offset + len).get_string_from_utf8()
+		ValueType.ARRAY:
+			var len = _bytes_to_int(data.slice(offset, offset + 4))
+			offset += 4
+			var json_str = data.slice(offset, offset + len).get_string_from_utf8()
+			var result = JSON.parse_string(json_str)
+			return result if result != null else []
+		ValueType.DICT:
+			var len = _bytes_to_int(data.slice(offset, offset + 4))
+			offset += 4
+			var json_str = data.slice(offset, offset + len).get_string_from_utf8()
+			var result = JSON.parse_string(json_str)
+			return result if result != null else {}
 		_:
-			var len = data.decode_s32(offset)
+			var len = _bytes_to_int(data.slice(offset, offset + 4))
 			offset += 4
 			var json_str = data.slice(offset, offset + len).get_string_from_utf8()
 			var result = JSON.parse_string(json_str)
 			return result if result != null else json_str
+
+
+func _int_to_bytes(value: int) -> PackedByteArray:
+	var bytes = PackedByteArray()
+	bytes.resize(4)
+	bytes[0] = (value >> 24) & 0xFF
+	bytes[1] = (value >> 16) & 0xFF
+	bytes[2] = (value >> 8) & 0xFF
+	bytes[3] = value & 0xFF
+	return bytes
+
+
+func _bytes_to_int(bytes: PackedByteArray) -> int:
+	if bytes.size() < 4:
+		return 0
+	return (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3]
 
 
 func _get_type_tag(value: Variant) -> int:
@@ -254,7 +288,7 @@ func _detect_anomaly() -> void:
 	var writes = 0
 	
 	for record in _access_history:
-		if record.type == AccessType.READ:
+		if record["type"] == AccessType.READ:
 			reads += 1
 		else:
 			writes += 1
@@ -264,11 +298,11 @@ func _detect_anomaly() -> void:
 	
 	if reads > 0 and writes > 0:
 		var alternating = 0
-		var last_type = _access_history[0].type
+		var last_type = _access_history[0]["type"]
 		for i in range(1, _access_history.size()):
-			if _access_history[i].type != last_type:
+			if _access_history[i]["type"] != last_type:
 				alternating += 1
-			last_type = _access_history[i].type
+			last_type = _access_history[i]["type"]
 		
 		var ratio = alternating / float(_access_history.size())
 		if ratio > scan_threshold_alternating_ratio:

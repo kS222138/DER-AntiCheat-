@@ -23,7 +23,6 @@ var _started: bool = false
 var _scan_timer: Timer = null
 var _main_loop: MainLoop = null
 
-# 检测器实例
 var process_monitor = null
 var integrity_check = null
 var memory_guard = null
@@ -78,7 +77,6 @@ func _init_detectors():
 	_detectors.clear()
 	_detector_names.clear()
 	
-	# 基础检测器 (detection/)
 	var monitor_script = preload("process_monitor.gd")
 	if monitor_script:
 		process_monitor = monitor_script.new()
@@ -118,7 +116,6 @@ func _init_detectors():
 	if packet_script:
 		packet_protector = packet_script.new()
 	
-	# ✅ 修复：使用正确路径加载 detection_v2/ 下的检测器
 	var scanner_v2_script = preload("../detection_v2/process_scanner_v2.gd")
 	if scanner_v2_script:
 		process_scanner_v2 = scanner_v2_script.new()
@@ -133,7 +130,6 @@ func _init_detectors():
 			_detectors.append(hook_detector)
 			_detector_names[hook_detector] = "HookDetector"
 	
-	# ✅ 修复：memory_obfuscator 在 core/ 目录下
 	var obfuscator_script = preload("../core/memory_obfuscator.gd")
 	if obfuscator_script:
 		memory_obfuscator = obfuscator_script.new()
