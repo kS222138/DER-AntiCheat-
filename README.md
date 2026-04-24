@@ -3,7 +3,7 @@
 Version: 2.3.0
 Godot Version: 4.6+
 License: MIT
-
+[📖 中文文档](README_CN.md) | [English](README.md)
 ---
 
 📦 What's New in v2.3.0
