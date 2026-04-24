@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bsfovr42anyyp"]
+
+[ext_resource type="Script" uid="uid://ba48h7oxn8pph" path="res://addons/DER AntiCheat /devtools/in_game_panel.gd" id="1"]
+
+[node name="DERInGamePanel" type="CanvasLayer" unique_id=587140322]
+process_mode = 3
+layer = 128
+script = ExtResource("1")

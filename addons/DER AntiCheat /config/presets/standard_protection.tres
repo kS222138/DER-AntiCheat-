@@ -1,0 +1,61 @@
+[gd_resource type="Resource" script_class="DERProtectionPreset"]
+[ext_resource type="Script" uid="uid://der_protection_preset_script" path="res://addons/DER AntiCheat /config/presets/protection_preset.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+preset_name = "Standard"
+preset_description = "Balanced protection for most multiplayer games. Covers memory encryption, injection detection, anti-debug, and speed hack detection. Recommended for most projects."
+preset_icon = "res://addons/DER AntiCheat /icons/standard.svg"
+
+vanguard_value_enabled = true
+pool_enabled = true
+memory_obfuscator_enabled = true
+thread_pool_enabled = true
+object_pool_enabled = true
+performance_monitor_enabled = false
+
+inject_detector_enabled = true
+memory_scanner_enabled = true
+hook_detector_enabled = true
+process_scanner_v2_enabled = true
+multi_instance_enabled = false
+vm_detector_enabled = false
+
+debugger_detector_enabled = true
+debug_detector_v2_enabled = false
+integrity_check_enabled = true
+
+network_client_enabled = false
+packet_protector_enabled = false
+replay_protector_enabled = false
+time_sync_enabled = false
+consistency_validator_enabled = false
+ccu_optimizer_enabled = false
+
+speed_detector_enabled = true
+speed_detector_v2_enabled = true
+virtual_pos_detector_enabled = false
+
+archive_encryptor_enabled = false
+archive_manager_enabled = false
+file_validator_enabled = true
+rollback_detector_enabled = false
+save_limit_enabled = false
+cloud_validator_enabled = false
+cloud_snapshot_enabled = false
+
+device_fingerprint_enabled = false
+whitelist_manager_enabled = false
+
+encrypted_logger_enabled = false
+alert_manager_enabled = false
+report_exporter_enabled = false
+dashboard_enabled = false
+stats_chart_enabled = false
+log_exporter_enabled = false
+
+profiler_enabled = false
+cheat_simulator_enabled = false
+file_integrity_enabled = false
+offline_protector_enabled = false
+log_encryptor_enabled = false

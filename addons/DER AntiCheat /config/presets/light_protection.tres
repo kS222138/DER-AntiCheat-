@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="DERProtectionPreset" format=3 uid="uid://ba4ret70kx7k3"]
+
+[ext_resource type="Script" uid="uid://ckkb862egwgkw" path="res://addons/DER AntiCheat /config/presets/protection_preset.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+preset_name = "Light"
+preset_description = "Minimal protection for single-player games. Covers basic memory encryption and speed hack detection. Near-zero performance impact."
+preset_icon = "res://addons/DER AntiCheat /icons/light.svg"
+thread_pool_enabled = false
+object_pool_enabled = false
+performance_monitor_enabled = true
+inject_detector_enabled = false
+memory_scanner_enabled = false
+hook_detector_enabled = false
+process_scanner_v2_enabled = false
+debugger_detector_enabled = false
+virtual_pos_detector_enabled = true
+file_validator_enabled = false
+log_encryptor_enabled = true

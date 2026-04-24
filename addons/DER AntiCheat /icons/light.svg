@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="feather" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#90EE90"/>
+      <stop offset="50%" stop-color="#3CB371"/>
+      <stop offset="100%" stop-color="#2E8B57"/>
+    </linearGradient>
+  </defs>
+  <path d="M48,4 C48,4 30,22 30,38 C30,50 38,56 38,56 C38,56 18,38 16,24 C14,12 22,4 22,4 C22,4 38,18 48,4 Z" fill="url(#feather)" stroke="#228B22" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M30,38 C30,44 34,52 34,52" fill="none" stroke="#228B22" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
